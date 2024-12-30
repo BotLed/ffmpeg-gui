@@ -22,6 +22,7 @@ class App(ttk.Window):
         self.file_path = tk.StringVar()
         self.flags = {}
         self.recent_files = RecentFiles(max_files=5)
+        self.output_location = tk.StringVar(value = 'C:/Users/AV000/Downloads')
         
 
         # Load Save Data
@@ -29,6 +30,8 @@ class App(ttk.Window):
 
         # widgets
         self.create_widgets()
+
+        self.init_keybinds()
 
         # run
         self.mainloop()
@@ -41,6 +44,33 @@ class App(ttk.Window):
 
         self.main = Main(self, self.file_path, self.recent_files, self.flags) # Notebook with tabs
 
+    
+    def convert(self, event=None):
+        command = ['ffmpeg']
+
+        if '-i' in self.flags and self.flags['-i']:
+            command.extend(["-i", self.flags['-i']])
+        if "-ss" in self.flags and self.flags["-ss"]:  # start time
+            command.extend(["-ss", self.flags["-ss"]])
+        if "-t" in self.flags and self.flags["-t"]:  # duration
+            command.extend(["-t", self.flags["-t"]])
+        if "-r" in self.flags and self.flags["-r"]:  # duration
+            command.extend(["-r", self.flags["-r"]])
+
+        command.append(f'{self.output_location.get()}/output.{self.file_extension.get()}' )
+
+        print(command)
+        
+        
+        try:
+            subp.run(command, check=True)
+        except subp.CalledProcessError as e:
+            print(f"Error while executing command: {e}")
+
+    
+    def init_keybinds(self):
+        self.bind('<Control-KeyPress-Return>', self.convert)
+        self.bind('<Control-Shift-BackSpace>', lambda event: self.quit())
 
 
 class Menu(tk.Menu):
@@ -123,7 +153,7 @@ class Main(ttk.Notebook):
         
         # YIKES, make this cleaner PLEASE
         #TODO add check for empty flag
-        if flag_name == '-vf width' or '-vf height':
+        if flag_name == '-vf width' or flag_name == '-vf height':
             if '-vf' not in self.flags:
                 self.flags['-vf'] = ['-1'] * 2 # -1 because it maintains aspect ratio, yes it sucks I will fix, 2 because thats max length
 
