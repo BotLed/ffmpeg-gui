@@ -4,8 +4,8 @@ import ttkbootstrap as ttk
 from tkinter.filedialog import askopenfilename
 
 import subprocess as subp
-import os
-import random
+import json
+from utils import RecentFiles
 
 def browse():
     fpath = askopenfilename(initialdir="/",
@@ -39,8 +39,23 @@ def convert(event=None):
     except subp.CalledProcessError as e:
         print(f"Error while executing command: {e}")
         
-    
 
+def save_file(f_path):
+    if not f_path: # check for empty file (since constantly updated)
+        return
+    recent_files.add_file(f_path)  # Add new file
+    files = recent_files.get_files()  # Get the updated list
+    with open("saves/save.json", "w") as f:  # Save back to the file
+        json.dump({"recent_files": files}, f, indent=4)
+
+
+def init_recent_files_menu():
+    print("UHFIOEHF")
+    with open("saves/save.json", "r") as f:
+        data = json.load(f)
+    
+    for file in data["recent_files"]:
+        recent_file_menu.add_command(label = file, command = lambda: f_path.set(file))
 
 # Update flags whenever the StringVar changes
 def update_flag(var_name, var_value):
@@ -50,6 +65,9 @@ def update_flag(var_name, var_value):
 
 
 flags = {}
+recent_files = RecentFiles(max_files=5)
+recent_files.load_files()  # Load existing files on startup
+
 
 window = ttk.Window()
 window.geometry('815x500')
@@ -63,8 +81,12 @@ video_width = tk.StringVar()
 video_height = tk.StringVar()
 output_location = tk.StringVar(value = 'C:/Users/AV000/Downloads')
 
+# TODO: FIX THIS CONSTANT UPDATING OR ADD CHECKS EVERYWHERE, THIS SUCKS
 # Bind callbacks to StringVar changes
-f_path.trace_add("write", lambda *args: update_flag("-i", f_path.get()))
+f_path.trace_add("write", lambda *args: (
+    update_flag("-i", f_path.get()), 
+    save_file(f_path.get())
+    ))
 start_time.trace_add("write", lambda *args: update_flag("-ss", start_time.get()))
 duration_time.trace_add("write", lambda *args: update_flag("-t", duration_time.get()))
 fps.trace_add("write", lambda *args: update_flag("-r", fps.get()))
@@ -74,8 +96,11 @@ menu = tk.Menu(window)
 
 # File Menu
 file_menu = tk.Menu(menu, tearoff=False)
-file_menu.add_command(label = 'New', command = lambda : print('New File'))
 file_menu.add_command(label = 'Open', command = lambda : print('Open File'))
+file_menu.add_command(label = 'Open', command = lambda : print('Open Recent'))
+recent_file_menu = tk.Menu(file_menu, tearoff=False)
+init_recent_files_menu() # initializes recent files submenu with data read from save
+
 
 # Presets Menu
 presets_menu = tk.Menu(menu, tearoff=False)
@@ -125,8 +150,8 @@ durationlock_button = ttk.Button(inputs_frame2, text = 'Lock', command = print(f
 
 
 fps_label = ttk.Label(inputs_frame2, text = 'FPS: ', font = 'Calibri 12')
-fps_input = ttk.Entry(inputs_frame2, textvariable = duration_time)
-fps_button = ttk.Button(inputs_frame2, text = 'Lock', command = print(f"PLACEHOLDER: FPS locked at {duration_time.get()}"))
+fps_input = ttk.Entry(inputs_frame2, textvariable = fps)
+fps_button = ttk.Button(inputs_frame2, text = 'Lock', command = print(f"PLACEHOLDER: FPS locked at {fps.get()}"))
 
 
 # -- SCALE INPUT ROW 3 --
@@ -153,6 +178,7 @@ window.configure(menu = menu)
 menu.add_cascade(label = 'File', menu = file_menu)
 menu.add_cascade(label = 'Help', menu = help_menu)
 menu.add_cascade(label = 'Presets', menu = presets_menu)
+file_menu.add_cascade(label = 'Recent Files', menu = recent_file_menu)
 
 # title
 title_frame.pack()
