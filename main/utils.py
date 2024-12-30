@@ -20,22 +20,3 @@ class RecentFiles:
                     with open(file_path, "r") as f:
                         data = json.load(f)
                         self.files = deque(data.get("recent_files", []), maxlen=self.max_files)
-
-    
-recent_files = RecentFiles(max_files=5)
-
-# Simulate adding files
-recent_files.add_file("/path/to/file1.txt")
-recent_files.add_file("/path/to/file2.txt")
-recent_files.add_file("/path/to/file3.txt")
-recent_files.add_file("/path/to/file4.txt")
-recent_files.add_file("/path/to/file5.txt")
-
-# Adding a duplicate, this won't be added again
-recent_files.add_file("/path/to/file1.txt")
-
-# Adding a new file when the list is full, the oldest will be removed
-recent_files.add_file("/path/to/file6.txt")
-
-# Print the recent files
-print(recent_files.get_files())
