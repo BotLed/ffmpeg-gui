@@ -1,6 +1,7 @@
 ### Disclaimer
 This is my absolute first ever GUI made with tkinter that I whipped up because I use ffmpeg frequently and got tired of using the command line.
 Over time it will become more polished, this is version two.
+*WARNING*: insanely unstable, there's currently a ton of bugs
 
 ### Dependencies
 
