@@ -4,6 +4,7 @@ import ttkbootstrap as ttk
 
 import subprocess as subp
 import json
+from pathlib import Path
 
 from utils import RecentFiles
 from basic_sections import FileInputSection, DurationSection, ScaleSection, SpeedSection
@@ -38,22 +39,27 @@ class App(ttk.Window):
         self.recent_files = RecentFiles(max_files=5)
         self.recent_output_dirs = RecentFiles(max_files=5)
         self.output_location = tk.StringVar(value = '/')
+        self.save_file_location = Path('saves/save.json').resolve()
+        # I have no clue why I made this into a tuple, this is probably stupid and is gonna force me to do
+        # screen_width =, screen_height =, a million times #TODO CHANGE
+        self.screen_dimensions = (self.winfo_screenwidth(), self.winfo_screenheight()) 
         
 
         # Load Save Data
         self.recent_files.load_files()
         self.recent_output_dirs.load_files()
 
-        # widgets
+        # Setup
         self.create_widgets()
-
         self.init_keybinds()
+        self.init_window_properties()
 
-        # run
         self.mainloop()
+        
+
 
     def create_widgets(self):
-        self.menu = Menu(self, self.file_extension, self.file_path) # Menu
+        self.menu = Menu(self, self.file_extension, self.file_path, self.save_file_location) # Menu
         self.config(menu=self.menu)
 
         # Removed title class and frame and put it here, frame seemed to be unecessary
@@ -64,7 +70,21 @@ class App(ttk.Window):
                          self.file_path, 
                          self.recent_files, 
                          self.flags, 
-                         self.output_location) # Notebook with tabs
+                         self.output_location,
+                         self.save_file_location,
+                         self.screen_dimensions) # Notebook with tabs
+        
+
+    def init_keybinds(self):
+        self.bind('<Control-KeyPress-Return>', self.convert)
+        self.bind('<Control-Shift-BackSpace>', lambda event: self.quit())
+        self.bind('<Cont')
+
+
+    def init_window_properties(self):
+         #self.attributes('-topmost', True) #TODO: add toggle for this
+        pass
+       
 
     
     def convert(self, event=None):
@@ -86,6 +106,7 @@ class App(ttk.Window):
             # Uses: #-filter_complex "[0:v]setpts=<1/x>*PTS[v];[0:a]atempo=<x>[a]" -map "[v]" -map "[a]
             # This is horrible and I hate it, need checks for inputs and a ton of other stuff filter-wise IMMEDIATELY
             
+            # for speeds higher than 2x, need multiple setpts flags
             command.extend(['-filter_complex', f'[0:v]scale={self.flags["-vf"][0]}:{self.flags["-vf"][1]}, setpts={1/float(self.flags["-vf"][2])}*PTS[v];[0:a]atempo={self.flags["-vf"][2]}[a]'])
             command.extend(['-map', '[v]'])
             command.extend(['-map', '[a]']) # GIFS don't support audio mapping, remove this for GIFS as well as [0:a]
@@ -98,19 +119,14 @@ class App(ttk.Window):
             subp.run(command, check=True)
         except subp.CalledProcessError as e:
             print(f"Error while executing command: {e}")
-        
-    
-    def init_keybinds(self):
-        self.bind('<Control-KeyPress-Return>', self.convert)
-        self.bind('<Control-Shift-BackSpace>', lambda event: self.quit())
-        self.bind('<Cont')
 
 
 class Menu(tk.Menu):
-    def __init__(self, parent, file_extension, file_path):
+    def __init__(self, parent, file_extension, file_path, save_file):
         super().__init__(parent)
         self.file_extension = file_extension
         self.file_path = file_path
+        self.save_file_location = save_file
 
         self.create_widgets()
         self.create_layout()
@@ -145,7 +161,7 @@ class Menu(tk.Menu):
 
 
     def init_recent_files_menu(self):
-        with open("saves/save.json", "r") as f:
+        with open(self.save_file_location, "r") as f:
                 data = json.load(f)
             
         for file in data["recent_files"]:
@@ -156,12 +172,14 @@ class Menu(tk.Menu):
 
 
 class Main(ttk.Notebook): 
-    def __init__(self, parent, filepath, recent_files, flags, output_location):
+    def __init__(self, parent, filepath, recent_files, flags, output_location, save_file, screen_dimensions):
         super().__init__(parent)
         self.file_path = filepath
         self.recent_files = recent_files
         self.flags = flags
         self.output_location = output_location
+        self.save_file_location = save_file
+        self.screen_dimensions = screen_dimensions
 
         self.create_widgets()
         self.create_layout()
@@ -223,6 +241,6 @@ class Main(ttk.Notebook):
         self.output_section.pack(fill = 'x', pady = 10)
 
          
-App('FFmpeg-GUI', (815,500))
+App('FFmpeg-GUI', (865,500))
 
 
