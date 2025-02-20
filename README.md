@@ -13,7 +13,7 @@ Over time it will become more polished, this is version two.
 
 ttkbootstrap
 ```
-pip install ttkbootstrap
+pip install -r requirements.txt
 ```
 
 ffmpeg
