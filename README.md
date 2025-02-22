@@ -11,17 +11,17 @@ Over time it will become more polished, this is version two.
 
 ### Dependencies
 
-ttkbootstrap
+Python Packages
 ```
 pip install -r requirements.txt
 ```
 
-ffmpeg
+FFmpeg
 ```
 https://www.ffmpeg.org/download.html
 ```
 
-Python 3.12.7
+Python 3.12
 ```
 https://www.python.org/downloads/
 ```
