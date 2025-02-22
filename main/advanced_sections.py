@@ -4,7 +4,6 @@ import ttkbootstrap as ttk
 from tkinter.filedialog import askdirectory
 from utils import RecentFiles
 import json
-import os
 
 
 class OutputSection(ttk.Frame):
