@@ -11,7 +11,7 @@ from basic_sections import FileInputSection, DurationSection, ScaleSection, Spee
 from advanced_sections import OutputSection
 
 
-#TODO: add actual checks for non-num values in the inputs
+#TODO: add actual checks for non-num values in the inputs (WIP, almost done)
 #TODO: add option to include -c flag in command to increase conversion speed -> copy the streams without re-encoding
 #TODO: add option to disable speed up/slow down sync between audio and video
 #TODO: add mute video option
@@ -144,6 +144,7 @@ class Menu(tk.Menu):
         self.help_menu.add_command(label="Help", command=lambda: print("Help function called"))
 
         self.presets_menu = tk.Menu(self, tearoff = False)
+        # TODO: Add some bullshit here to get convert() to use a unique complex filter for gifs (no audio mapping)
         self.presets_menu.add_radiobutton(label = 'Convert to GIF', variable = self.file_extension, value = 'gif')
         self.presets_menu.add_radiobutton(label = 'Convert to MP4', variable = self.file_extension, value = 'mp4')
         self.presets_menu.add_radiobutton(label = 'Convert to MP3', variable = self.file_extension, value = 'mp3')
@@ -184,7 +185,8 @@ class Main(ttk.Notebook):
         self.create_widgets()
         self.create_layout()
 
-
+    
+    # TODO: UPDATE THIS ENTIRE METHOD TO NOT USE -VF BUT TO REPRESENT NEW COMPLEX FILTER APPROACH!!!!!!!!!!!!!!!!!!
     def update_flag(self, flag_name, flag_value):
         if not flag_value:
             return
